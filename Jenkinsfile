@@ -11,7 +11,7 @@ node {
     registryHost = "sibendu"
     imageName = "${registryHost}/${appName}:${tag}"
     registryUer="sibendudas"
-    registryPassword="p@ssw0rd12"		
+    registryPassword="password1234"		
     env.BUILDIMG=imageName
 
     stage "Build"
