@@ -10,8 +10,8 @@ node {
     appName = "hello"
     registryHost = "sibendu"
     imageName = "${registryHost}/${appName}:${tag}"
-    registryUer=sibendudas
-    registryPassword=p@ssw0rd12		
+    registryUer="sibendudas"
+    registryPassword="p@ssw0rd12"		
     env.BUILDIMG=imageName
 
     stage "Build"
