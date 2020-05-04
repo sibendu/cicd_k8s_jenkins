@@ -15,7 +15,8 @@ node {
     env.BUILDIMG=imageName
 
     stage "Build"
-    	sh "docker ps"
+    	sh "echo ${imageName}"
+	sh "docker ps"
         sh "docker build -t ${imageName} -f applications/hello/Dockerfile applications/hello"
     
     stage "Push"
