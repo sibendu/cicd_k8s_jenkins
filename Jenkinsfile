@@ -63,7 +63,7 @@ spec:
       steps {
         sh """
             pwd
-            echo "GIT_BRANCH=${gitBranch}" >> /etc/environment
+            echo "GIT_BRANCH=${gitBranch}" >> /etc/environment 
             echo "GIT_COMMIT=${gitCommit}" >> /etc/environment
             //gradle test
             println "Stage test completed - ${currentBuild.fullDisplayName}"
