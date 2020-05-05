@@ -1,65 +1,32 @@
-pipeline {
+def label = "worker-${UUID.randomUUID().toString()}"
 
-  environment {
-    PROJECT = "sibendu"
-    DOCKER_REPO = "sibendudas"
-    APP_NAME = "hello"
-    FE_SVC_NAME = "${APP_NAME}-frontend"
-    CLUSTER = "jenkins-cd"
-    CLUSTER_ZONE = "us-east1-d"
-    IMAGE_TAG = "${DOCKER_REPO}/${PROJECT}_${APP_NAME}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"  
-    JENKINS_CRED = "${PROJECT}"
-  }  
-	
-  agent none		
-/*
-  agent {
-    kubernetes {
-      label 'sample-app'
-      defaultContainer 'jnlp'
-      yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-labels:
-  component: ci
-spec:
-  # Use service account that can deploy to all namespaces
-  serviceAccountName: cd-jenkins
-  containers:
-  - name: kubectl
-    image: gcr.io/cloud-builders/kubectl
-    command:
-    - cat
-    tty: true
-"""
-}
-  }
-*/  
-  
-  stages {
-  	/*
-    stage('Test') {
-      steps {
-        container('kubectl') {
-          sh("kubectl get nodes")
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+]) {
+  node(label) {
+    def myRepo = checkout scm
+    def gitCommit = myRepo.GIT_COMMIT
+    def gitBranch = myRepo.GIT_BRANCH
+    def shortGitCommit = "${gitCommit[0..10]}"
+    def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+ 
+    stage('Create Docker images') {
+      container('docker') {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+          credentialsId: 'dockerhub',
+          usernameVariable: 'DOCKER_HUB_USER',
+          passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
+          sh """
+            docker ps
+            docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}
+            //docker build -t namespace/my-image:${gitCommit} .
+            //docker push namespace/my-image:${gitCommit}
+            """
         }
       }
-    }	
-    */
-    
-    stage('Test') {
-      agent { docker 'maven:3-alpine' }  
-      steps {
-         sh """
-            pwd
-            echo "IMAGE_TAG=${IMAGE_TAG}" >> /etc/environment
-            //gradle test
-            println "Stage test completed - ${PROJECT}:${APP_NAME}"
-         """
-      }
     }
-           
-  }
-   
+ }
 }
