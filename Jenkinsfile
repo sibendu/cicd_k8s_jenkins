@@ -4,7 +4,7 @@ podTemplate(label: label, containers: [
   containerTemplate(name: 'docker', image: 'docker', command: 'cat',privileged: true, ttyEnabled: true)   
 ],
 volumes: [
-  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')  
 ]) {
   node(label) {
     def myRepo = checkout scm
