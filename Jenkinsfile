@@ -51,8 +51,8 @@ volumes: [
           sh """
             docker ps
             docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}
-            docker build -t namespace/my-image:${gitCommit} .
-            docker push namespace/my-image:${gitCommit}
+            //docker build -t namespace/my-image:${gitCommit} .
+            //docker push namespace/my-image:${gitCommit}
             """
         }
       }
