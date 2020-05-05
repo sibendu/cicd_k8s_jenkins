@@ -11,6 +11,7 @@ pipeline {
     JENKINS_CRED = "${PROJECT}"
   }
 
+/*
   agent {
     kubernetes {
       label 'sample-app'
@@ -33,14 +34,44 @@ spec:
 """
 }
   }
+*/  
+  
   stages {
+  	/*
     stage('Test') {
       steps {
         container('kubectl') {
           sh("kubectl get nodes")
         }
       }
+    }	
+    */
+    
+    stage('Permissions') {
+      steps {
+         sh """
+            pwd
+            echo "GIT_BRANCH=${gitBranch}" >> /etc/environment
+            echo "GIT_COMMIT=${gitCommit}" >> /etc/environment
+            //gradle test
+            println "Stage test completed - ${currentBuild.fullDisplayName}"
+         """
+      }
     }
+    
+    stage('Cleanup') {
+      steps {
+        sh """
+            pwd
+            echo "GIT_BRANCH=${gitBranch}" >> /etc/environment
+            echo "GIT_COMMIT=${gitCommit}" >> /etc/environment
+            //gradle test
+            println "Stage test completed - ${currentBuild.fullDisplayName}"
+         """
+      }
+    }
+    
+    
   }
   
   
