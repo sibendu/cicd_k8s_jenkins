@@ -1,30 +1,71 @@
-node {
+def label = "worker-${UUID.randomUUID().toString()}"
 
-    checkout scm
-
-    env.DOCKER_API_VERSION="1.23"
-    
-    sh "git rev-parse --short HEAD > commit-id"
-
-    tag = readFile('commit-id').replace("\n", "").replace("\r", "")
-    appName = "hello"
-    registryHost = "sibendu"
-    imageName = "${registryHost}/${appName}:${tag}"
-    registryUer=sibendudas
-    registryPassword=p@ssw0rd12		
-    env.BUILDIMG=imageName
-
-    stage "Build"
-    
-        sh "docker build -t ${imageName} -f applications/hello/Dockerfile applications/hello"
-    
-    stage "Push"
-	
-	sh "docker login -u ${registryUer} -p ${registryPassword}"
-        sh "docker push ${imageName}"
-
-    stage "Deploy"
-
-        sh "sed 's#sibendu/hello:latest#'$BUILDIMG'#' applications/hello/deployment.yaml | kubectl apply -f -"
-        sh "kubectl rollout status deployment/hello-kenzan"
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'gradle', image: 'gradle:4.5.1-jdk9', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+  hostPathVolume(mountPath: '/home/gradle/.gradle', hostPath: '/tmp/jenkins/.gradle'),
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+]) {
+  node(label) {
+    def myRepo = checkout scm
+    def gitCommit = myRepo.GIT_COMMIT
+    def gitBranch = myRepo.GIT_BRANCH
+    def shortGitCommit = "${gitCommit[0..10]}"
+    def previousGitCommit = sh(script: "git rev-parse ${gitCommit}~", returnStdout: true)
+ 
+    stage('Test') {
+      try {
+        container('gradle') {
+          sh """
+            pwd
+            echo "GIT_BRANCH=${gitBranch}" >> /etc/environment
+            echo "GIT_COMMIT=${gitCommit}" >> /etc/environment
+            //gradle test
+            println "Stage test completed - ${currentBuild.fullDisplayName}"
+            """
+        }
+      }
+      catch (exc) {
+        println "Failed to test - ${currentBuild.fullDisplayName}"
+        throw(exc)
+      }
+    }
+    stage('Build') {
+      container('gradle') {
+        sh """
+            //gradle build
+            println "Build test completed - ${currentBuild.fullDisplayName}"
+        """ 
+      }
+    }
+    stage('Create Docker images') {
+      container('docker') {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+          credentialsId: 'dockerhub',
+          usernameVariable: 'DOCKER_HUB_USER',
+          passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
+          sh """
+            docker ps
+            docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}
+            docker build -t namespace/my-image:${gitCommit} .
+            docker push namespace/my-image:${gitCommit}
+            """
+        }
+      }
+    }
+    stage('Run kubectl') {
+      container('kubectl') {
+        sh "kubectl get nodes"
+      }
+    }
+    stage('Run helm') {
+      container('helm') {
+        sh "helm list"
+      }
+    }
+  }
 }
