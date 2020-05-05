@@ -8,9 +8,9 @@ pipeline {
     CLUSTER = "jenkins-cd"
     CLUSTER_ZONE = "us-east1-d"
     IMAGE_TAG = "${DOCKER_REPO}/${PROJECT}_${APP_NAME}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
-    JENKINS_CRED = "${PROJECT}"
+    JENKINS_CRED = "${PROJECT}" 
   }
-
+  
 /*
   agent {
     kubernetes {
