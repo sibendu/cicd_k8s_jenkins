@@ -14,7 +14,7 @@ pipeline {
 /*
   agent {
     kubernetes {
-      label 'sample-app'
+      label 'jenkinsci'
       defaultContainer 'jnlp'
       yaml """
 apiVersion: v1
@@ -26,7 +26,7 @@ spec:
   # Use service account that can deploy to all namespaces
   serviceAccountName: cd-jenkins
   containers:
-  - name: kubectl
+  - name: kubectl  
     image: gcr.io/cloud-builders/kubectl
     command:
     - cat
@@ -74,5 +74,5 @@ spec:
     
   }
   
-  
+   
 }
