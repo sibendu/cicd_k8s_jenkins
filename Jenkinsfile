@@ -49,7 +49,7 @@ spec:
     */
     
     stage('Test') {
-      agent { docker 'maven:3-alpine' }
+      agent { docker 'maven:3-alpine' }  
       steps {
          sh """
             pwd
