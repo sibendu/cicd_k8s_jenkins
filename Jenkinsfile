@@ -48,30 +48,17 @@ spec:
     }	
     */
     
-    stage('Permissions') {
+    stage('Test') {
       steps {
          sh """
             pwd
-            echo "GIT_BRANCH=${gitBranch}" >> /etc/environment
-            echo "GIT_COMMIT=${gitCommit}" >> /etc/environment
+            echo "IMAGE_TAG=${IMAGE_TAG}" >> /etc/environment
             //gradle test
-            println "Stage test completed - ${currentBuild.fullDisplayName}"
+            println "Stage test completed - ${PROJECT}:${APP_NAME}"
          """
       }
     }
-    
-    stage('Cleanup') {
-      steps {
-        sh """
-            pwd
-            echo "GIT_BRANCH=${gitBranch}" >> /etc/environment 
-            echo "GIT_COMMIT=${gitCommit}" >> /etc/environment
-            //gradle test
-            println "Stage test completed - ${currentBuild.fullDisplayName}"
-         """
-      }
-    }
-       
+           
   }
    
 }
