@@ -8,13 +8,13 @@ pipeline {
     CLUSTER = "jenkins-cd"
     CLUSTER_ZONE = "us-east1-d"
     IMAGE_TAG = "${DOCKER_REPO}/${PROJECT}_${APP_NAME}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
-    JENKINS_CRED = "${PROJECT}" 
+    JENKINS_CRED = "${PROJECT}"
   }
-  
+
 /*
   agent {
     kubernetes {
-      label 'jenkinsci'
+      label 'sample-app'
       defaultContainer 'jnlp'
       yaml """
 apiVersion: v1
@@ -26,7 +26,7 @@ spec:
   # Use service account that can deploy to all namespaces
   serviceAccountName: cd-jenkins
   containers:
-  - name: kubectl  
+  - name: kubectl
     image: gcr.io/cloud-builders/kubectl
     command:
     - cat
@@ -70,9 +70,7 @@ spec:
          """
       }
     }
-    
-    
+       
   }
-  
    
 }
